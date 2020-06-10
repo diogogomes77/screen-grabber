@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Screen grabber</title>
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/bootstrap.min.responsive.css" rel="stylesheet">
+    <style type="text/css">
+      body { padding-top: 80px; }
+    </style>
+  </head>
+
+  <body>
+    
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="brand" href="#">Screen grabber</a>
+        </div>
+      </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row-fluid">
+          <section class="experiment recordrtc">
+            <h2 class="header">
+                <select class="recording-media">
+                    <option value="record-screen">Screen</option>
+                </select>
+
+                into
+                <select class="media-container-format">
+                    <option>WebM</option>
+                    <option>Gif</option>
+                </select>
+
+                <button>Start Recording</button>
+            </h2>
+
+            <div style="text-align: center; display: none;">
+                <button id="save-to-disk">Save To Disk</button>
+                <button id="open-new-tab">Open New Tab</button>
+                <button id="upload-to-server">Upload To Server</button>
+            </div>
+
+            <br>
+
+            <video controls playsinline autoplay muted=false volume=1></video>
+        </section>
+        </div>
+    </div>
+
+    <script src='http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js'></script> 
+
+
+
+    <script src="https://www.webrtc-experiment.com/RecordRTC.js"></script>
+    <script src="https://www.webrtc-experiment.com/gif-recorder.js"></script>
+    <script src="https://www.webrtc-experiment.com/getScreenId.js"></script>
+    <script src="https://www.webrtc-experiment.com/DetectRTC.js"> </script>
+    <!-- for Edige/FF/Chrome/Opera/etc. getUserMedia support -->
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+
+
+
+    <script src='desktop-rtc-grab.js'></script>
+  </body>
+</html>
