@@ -1,0 +1,4 @@
+FROM dgomes_websockets:0.1
+MAINTAINER Diogo Gomes
+COPY ./src /build/src/
+RUN mvn package && ln -s ./target/*.jar ./dgomes_app.jar

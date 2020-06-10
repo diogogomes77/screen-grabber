@@ -2,6 +2,41 @@ $(document).ready(function() {
   
   console.log('ready');
 
+  /*
+  const binaryStart = document.getElementById("binary-start");
+  const binaryStop = document.getElementById("binary-stop");
+  const testStart = document.getElementById("test-start");
+  const testStop = document.getElementById("test-stop");
+*/
+
+  var client, destinationAll, username, users;
+  var protWs = "ws://"
+  var prot = "http://"
+  var host = '127.0.0.1'
+  var port = ':8080'
+  var sockBinaryUrl = protWs + host + port + '/binary';
+  var sockTestUrl = prot + host + port + '/test';
+  /*
+  var sock; 
+
+    console.log('setClient')
+    sock = new SockJS(sockBinaryUrl);
+   
+    sock.debug = function(str) {
+        //$("#debug").append(str + "\n");
+        console.log('[debug]\t'+str);
+    };
+
+    sock.onopen = function() {
+      console.log('open');
+      sock.send('test');
+    };
+ */
+  window.textWS = new TextWSClient(sockTestUrl);
+  window.textWS.setOnMessage(showGreetings);
+  window.binaryWS = new BinaryWSClient(sockBinaryUrl);
+  window.binaryWS.setOnMessage(showGreetings);
+    
   const videoElem = document.getElementById("video");
   const logElem = document.getElementById("log");
   const startElem = document.getElementById("start");
@@ -37,36 +72,33 @@ $(document).ready(function() {
   var recordedChunks = [];
   //console.log(stream);
   var options = { mimeType: "video/webm; codecs=vp8" };
-  
 
   async function startCapture() {
     logElem.innerHTML = "";
-  
     try {
-      videoElem.srcObject = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
+      //videoElem.srcObject = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
+      videoElem.srcObject = await navigator.mediaDevices.getUserMedia(displayMediaOptions);
+      
+      
       console.log(videoElem.srcObject);
       dumpOptionsInfo();
       
-      videoElem.captureStream = videoElem.captureStream || videoElem.mozCaptureStream;
+      //videoElem.captureStream = videoElem.captureStream || videoElem.mozCaptureStream;
       console.log(videoElem);
       mediaRecorder = new MediaRecorder(videoElem.srcObject, options);
       console.info(mediaRecorder);
       mediaRecorder.ondataavailable = handleDataAvailable;
-      
       console.info("here");
-      
-      
       mediaRecorder.start();
       // demo: to download after 9sec
-      
-
+      setTimeout(event => {
+        console.log("stopping");
+        mediaRecorder.stop();
+      }, 10000);
     } catch(err) {
       console.error("Error: " + err);
     }
-    setTimeout(event => {
-      console.log("stopping");
-      mediaRecorder.stop();
-    }, 10000);
+
   } 
   
   function stopCapture(evt) {
@@ -111,6 +143,10 @@ function download() {
   window.URL.revokeObjectURL(url);
 }
 
+recorderProcess = (e) => {
+  const left = e.inputBuffer.getChannelData(0);
+  this.socket.emit('stream', this.convertFloat32ToInt16(left))
+}
 
 
 });
