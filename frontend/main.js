@@ -47,7 +47,7 @@ $(document).ready(function() {
   var displayMediaOptions = {
     video: {
       cursor: "always",
-      frameRate: 30,
+      frameRate: 6,
       height: 768,
       width: 1024
     },
@@ -74,7 +74,8 @@ $(document).ready(function() {
   var firstBlob;
   //console.log(stream);
   var options = { 
-    mimeType: "video/webm" 
+    mimeType: "video/webm",
+    videoBitsPerSecond: 1000000
   };
 
   async function startCapture() {
@@ -118,19 +119,22 @@ function handleStop(event){
 function handleDataAvailable(event) {
   console.log("data-available");
   //console.log('event= ' + event);
-  //console.log('event= ' + event.data);
+  console.log('event.data.size= ' + event.data.size);
   if (event.data.size > 0) {
     recordedChunks.push(event.data);
-    if (firstBlob == null){
+    /*if (firstBlob == null){
       firstBlob = event.data;
-    }
+    }*/
     //console.log('event.data= ' + event.data);
     //download();
     //upload(event.data);
     //uploadFile();
-    // uploadChunks();
+    //uploadChunk(event.data);
     //recordedChunks = [];
-    uploadChunks(); // works!!
+    if (recordedChunks.length > 1){
+      uploadChunks(); // works!!
+    }
+    //uploadChunks(); // works!!
     //recordedChunks = []
     //uploadrecordedChunks();
     //uploadChunk(event.data);
@@ -154,6 +158,7 @@ function uploadrecordedChunks(){// no work
 
 function uploadChunks(){// works!
   console.log("uploadChunks");
+  console.log('recordedChunks.length= ' + recordedChunks.length);
   var blob = new Blob(recordedChunks, {
     type: "video/webm"
   });
