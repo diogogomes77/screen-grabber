@@ -27,6 +27,7 @@ BinaryWSClient.prototype.setConnected = function(connected) {
 };
 BinaryWSClient.prototype.uploadFile = function(files) {
     var file = files[0];
+    console.log('file= ' + file);
 
     if (!this.ws) {
         this.connect();
