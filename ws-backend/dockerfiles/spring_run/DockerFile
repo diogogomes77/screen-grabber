@@ -1,4 +1,6 @@
-FROM dgomes_websockets:0.1
+FROM maven:3.5.2-jdk-8-alpine
 MAINTAINER Diogo Gomes
+COPY ./pom.xml /build/
 COPY ./src /build/src/
+WORKDIR /build/
 RUN mvn package && ln -s ./target/*.jar ./dgomes_app.jar
