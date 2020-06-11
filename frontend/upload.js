@@ -17,6 +17,7 @@ BinaryWSClient.prototype.setOnMessage = function(onMessageFn) {
 BinaryWSClient.prototype.disconnect = function() {
     if (this.ws != null) {
         this.ws.close();
+        this.ws = null;
     }
     this.setConnected(false);
     console.log("Disconnected");

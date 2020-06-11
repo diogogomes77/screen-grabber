@@ -2,38 +2,12 @@ $(document).ready(function() {
   
   console.log('ready');
 
-  /*
-  const binaryStart = document.getElementById("binary-start");
-  const binaryStop = document.getElementById("binary-stop");
-  const testStart = document.getElementById("test-start");
-  const testStop = document.getElementById("test-stop");
-*/
-
-  var client, destinationAll, username, users;
   var protWs = "ws://"
   var prot = "http://"
   var host = '127.0.0.1'
   var port = ':8080'
   var sockBinaryUrl = protWs + host + port + '/binary';
-  var sockTestUrl = prot + host + port + '/test';
-  /*
-  var sock; 
 
-    console.log('setClient')
-    sock = new SockJS(sockBinaryUrl);
-   
-    sock.debug = function(str) {
-        //$("#debug").append(str + "\n");
-        console.log('[debug]\t'+str);
-    };
-
-    sock.onopen = function() {
-      console.log('open');
-      sock.send('test');
-    };
- */
-  window.textWS = new TextWSClient(sockTestUrl);
-  window.textWS.setOnMessage(showGreetings);
   window.binaryWS = new BinaryWSClient(sockBinaryUrl);
   window.binaryWS.setOnMessage(showGreetings);
     
@@ -41,20 +15,33 @@ $(document).ready(function() {
   const logElem = document.getElementById("log");
   const startElem = document.getElementById("start");
   const stopElem = document.getElementById("stop");
+
+  var myFrameRateSlider = document.getElementById("myFrameRate");
+  var myFrameRateElem = document.getElementById("framerate");
+  var myFrameRate = 6;
   
   // Options for getDisplayMedia()
   
   var displayMediaOptions = {
     video: {
       cursor: "always",
-      frameRate: 6,
+      frameRate: myFrameRate,
       height: 768,
       width: 1024
     },
     audio: false
   };
-  
-  // Set event listeners for the start and stop buttons
+  var mediaRecorderOptions = { 
+    mimeType: "video/webm",
+    videoBitsPerSecond: 1000000
+  };
+
+  myFrameRateSlider.oninput = function() {
+    myFrameRateElem.innerHTML = this.value;
+    displayMediaOptions['video']['frameRate'] = this.value;
+  } 
+
+
   startElem.addEventListener("click", function(evt) {
     startCapture();
   }, false);
@@ -68,97 +55,56 @@ $(document).ready(function() {
   console.warn = msg => logElem.innerHTML += `<span class="warn">${msg}<span><br>`;
   console.info = msg => logElem.innerHTML += `<span class="info">${msg}</span><br>`; 
 
-  //var stream = videoElem.mozCaptureStream;
   var recordedChunks = [];
-  var recordedBlobs = [];
-  var firstBlob;
   //console.log(stream);
-  var options = { 
-    mimeType: "video/webm",
-    videoBitsPerSecond: 1000000
-  };
+  
 
   async function startCapture() {
     logElem.innerHTML = "";
+    if (window.binaryWS.ws) {
+      window.binaryWS.connect();
+    }
     try {
       videoElem.srcObject = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
       //videoElem.srcObject = await navigator.mediaDevices.getUserMedia(displayMediaOptions);
-      console.log("stream= " + videoElem.srcObject);
       dumpOptionsInfo();
-      
       //videoElem.captureStream = videoElem.captureStream || videoElem.mozCaptureStream;
-      console.log("video= " + videoElem);
-      mediaRecorder = new MediaRecorder(videoElem.srcObject, options);
+      mediaRecorder = new MediaRecorder(videoElem.srcObject, mediaRecorderOptions);
       console.info(mediaRecorder);
       mediaRecorder.ondataavailable = handleDataAvailable;
       mediaRecorder.onstop = handleStop;
       mediaRecorder.start(1000);
       /*
+      mediaRecorder.start();
       setTimeout(event => {
         console.log("stopping");
-        //mediaRecorder.stop();
+        mediaRecorder.stop();
       }, 3000);*/
     } catch(err) {
       console.error("Error: " + err);
     }
   } 
 
-function stopMediaRecorder () {
-  console.log("stopMediaRecorder");
-  if (recordedChunks.size > 0) {
-    //console.log("ok");
-    //recordedBlobs.push(event.data);
+function handleStop(event){
+  console.log("handleStop");
+  if (window.binaryWS.ws != null) {
+    window.binaryWS.disconnect();
   }
 }
 
-function handleStop(event){
-  console.log("handleStop");
-  
-}
-
 function handleDataAvailable(event) {
-  console.log("data-available");
-  //console.log('event= ' + event);
-  console.log('event.data.size= ' + event.data.size);
   if (event.data.size > 0) {
     recordedChunks.push(event.data);
-    /*if (firstBlob == null){
-      firstBlob = event.data;
-    }*/
-    //console.log('event.data= ' + event.data);
-    //download();
-    //upload(event.data);
-    //uploadFile();
-    //uploadChunk(event.data);
-    //recordedChunks = [];
     if (recordedChunks.length > 1){
       uploadChunks(); // works!!
     }
-    //uploadChunks(); // works!!
-    //recordedChunks = []
-    //uploadrecordedChunks();
-    //uploadChunk(event.data);
+    //download();
   } else {
     // ...
   }
 }
 
-function uploadChunk(chunk){ // no work
-  console.log("uploadChunk");
-  var blob = new Blob([chunk], {
-    type: "video/webm"
-  });
-  upload(blob);  
-}
-
-function uploadrecordedChunks(){// no work
-  console.log("uploadrecordedChunks");
-  upload(recordedChunks);  
-}
-
 function uploadChunks(){// works!
-  console.log("uploadChunks");
-  console.log('recordedChunks.length= ' + recordedChunks.length);
   var blob = new Blob(recordedChunks, {
     type: "video/webm"
   });
@@ -166,42 +112,12 @@ function uploadChunks(){// works!
   recordedChunks = [];
 }
 
-function uploadFile(){
-  console.log("uploadFile");
-  var reader = new FileReader();
-  var blob = new Blob(recordedChunks, {
-    type: "video/webm"
-  });
-  reader.readAsArrayBuffer(blob);
-  reader.onloadend = (event) => {
-    // The contents of the BLOB are in reader.result:
-    //var result = reader.result;
-    upload(reader.result);
-    
-  }
-}
-
 function upload(data){
   console.log("upload");
-  /*
-  var blob = new Blob(recordedChunks, {
-    type: "video/webm"
-  });
-  blob.lastModifiedDate = new Date();
-  blob.name = "upload";
-  */
   if (! window.binaryWS.ws) {
     window.binaryWS.connect();
   }
-  console.log(data);
-
   window.binaryWS.ws.send(data);
-  //recordedChunks = [];
-}
-
-function closeWs() {
-  var so = window.binaryWS.ws;
-  so.close.bind(so);
 }
 
 function download() {
@@ -217,33 +133,10 @@ function download() {
   a.download = "test.webm";
   a.click();
   window.URL.revokeObjectURL(url);
-
-  var sendfile = new File([blob], "cenasXPTO");
-  console.log('sendfile= ' + sendfile);
-  if (! window.binaryWS.ws) {
-    window.binaryWS.connect();
-  }
-  console.log('Sending '+sendfile.name);
-  window.binaryWS.ws.send(sendfile);
-  /*
-  var reader = new FileReader();
-  reader.readAsArrayBuffer(blob);
-  reader.onloadend = (event) => {
-    // The contents of the BLOB are in reader.result:
-    var result = reader.result;
-    console.log('result= ' + result);
-    if (! window.binaryWS.ws) {
-      window.binaryWS.connect();
-    }
-    window.binaryWS.ws.send(result);
-    
-  }*/
-  
 }
   
   function stopCapture(evt) {
     let tracks = videoElem.srcObject.getTracks();
-  
     tracks.forEach(track => track.stop());
     videoElem.srcObject = null;
   } 
@@ -256,13 +149,5 @@ function download() {
     console.info("Track constraints:");
     console.info(JSON.stringify(videoTrack.getConstraints(), null, 2));
   }
-
-
-
-recorderProcess = (e) => {
-  const left = e.inputBuffer.getChannelData(0);
-  this.socket.emit('stream', this.convertFloat32ToInt16(left))
-}
-
 
 });
