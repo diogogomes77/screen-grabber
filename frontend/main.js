@@ -70,6 +70,8 @@ $(document).ready(function() {
 
   //var stream = videoElem.mozCaptureStream;
   var recordedChunks = [];
+  var recordedBlobs = [];
+  var firstBlob;
   //console.log(stream);
   var options = { 
     mimeType: "video/webm" 
@@ -88,37 +90,75 @@ $(document).ready(function() {
       mediaRecorder = new MediaRecorder(videoElem.srcObject, options);
       console.info(mediaRecorder);
       mediaRecorder.ondataavailable = handleDataAvailable;
-      console.info("here");
-      
-      //mediaRecorder.addEventListener('stop', closeWs());
-
-      mediaRecorder.start(5000);
-      
-      
+      mediaRecorder.onstop = handleStop;
+      mediaRecorder.start(1000);
+      /*
       setTimeout(event => {
         console.log("stopping");
         //mediaRecorder.stop();
-      }, 3000);
+      }, 3000);*/
     } catch(err) {
       console.error("Error: " + err);
     }
-
   } 
+
+function stopMediaRecorder () {
+  console.log("stopMediaRecorder");
+  if (recordedChunks.size > 0) {
+    //console.log("ok");
+    //recordedBlobs.push(event.data);
+  }
+}
+
+function handleStop(event){
+  console.log("handleStop");
+  
+}
 
 function handleDataAvailable(event) {
   console.log("data-available");
-  console.log('event= ' + event);
-  console.log('event= ' + event.data);
+  //console.log('event= ' + event);
+  //console.log('event= ' + event.data);
   if (event.data.size > 0) {
     recordedChunks.push(event.data);
-    console.log('event.data= ' + event.data);
+    if (firstBlob == null){
+      firstBlob = event.data;
+    }
+    //console.log('event.data= ' + event.data);
     //download();
     //upload(event.data);
-    uploadFile();
+    //uploadFile();
+    // uploadChunks();
     //recordedChunks = [];
+    uploadChunks(); // works!!
+    //recordedChunks = []
+    //uploadrecordedChunks();
+    //uploadChunk(event.data);
   } else {
     // ...
   }
+}
+
+function uploadChunk(chunk){ // no work
+  console.log("uploadChunk");
+  var blob = new Blob([chunk], {
+    type: "video/webm"
+  });
+  upload(blob);  
+}
+
+function uploadrecordedChunks(){// no work
+  console.log("uploadrecordedChunks");
+  upload(recordedChunks);  
+}
+
+function uploadChunks(){// works!
+  console.log("uploadChunks");
+  var blob = new Blob(recordedChunks, {
+    type: "video/webm"
+  });
+  upload(blob);  
+  recordedChunks = [];
 }
 
 function uploadFile(){
