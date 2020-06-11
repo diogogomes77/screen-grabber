@@ -19,6 +19,8 @@ $(document).ready(function() {
   var myFrameRateSlider = document.getElementById("myFrameRate");
   var myFrameRateElem = document.getElementById("framerate");
   var myFrameRate = 6;
+
+  var myScreenSizeRadio = document.getElementsByName("screensize");
   
   // Options for getDisplayMedia()
   
@@ -31,14 +33,49 @@ $(document).ready(function() {
     },
     audio: false
   };
+
+  myFrameRateSlider.oninput = function() {
+    myFrameRateElem.innerHTML = this.value;
+    displayMediaOptions['video']['frameRate'] = this.value;
+  } 
+
+  $('input[type="radio"]').change( function(e) {
+    switch($(this).val()) {
+      case "A":
+        height = null;
+        width = null;
+        break;
+      case "B":
+        height = 720;
+        width = 1280;
+        break;
+      case "C":
+        height = 1080;
+        width = 1920;
+        break;
+      default:
+        height = null;
+        width = null;
+    }
+    console.log("height " + height);
+    console.log("width " + width);
+    displayMediaOptions['video']['height'] = height;
+    displayMediaOptions['video']['width'] = width;
+  });
+  
+
+  var myBitRateSlider = document.getElementById("myBitRate");
+  var myBitRateElem = document.getElementById("bitrate");
+  var myBitRate = 100000;
+
   var mediaRecorderOptions = { 
     mimeType: "video/webm",
     videoBitsPerSecond: 1000000
   };
 
-  myFrameRateSlider.oninput = function() {
-    myFrameRateElem.innerHTML = this.value;
-    displayMediaOptions['video']['frameRate'] = this.value;
+  myBitRateSlider.oninput = function() {
+    myBitRateElem.innerHTML = this.value;
+    mediaRecorderOptions['videoBitsPerSecond'] = this.value;
   } 
 
 
@@ -113,7 +150,7 @@ function uploadChunks(){// works!
 }
 
 function upload(data){
-  console.log("upload");
+  console.log("uploading chunk with size: " + data.size);
   if (! window.binaryWS.ws) {
     window.binaryWS.connect();
   }

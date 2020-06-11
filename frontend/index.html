@@ -41,7 +41,7 @@
     </div>
     <div class="container-fluid">
         <div class="row-fluid">
-            <p>This example shows you the contents of the selected part of your display.
+            <p>This will capture your screen and send it to Websockets as Webm video sream. <br>
                 Click the Start Capture button to begin.</p>
                 
           <p>
@@ -49,8 +49,19 @@
               &nbsp;
             <button id="stop">Stop Capture</button>
             <div class="slidecontainer">
-              <input type="range" min="1" max="30" value="6" class="slider" id="myFrameRate">
-              <p>FrameRate: <span id="framerate">6</span></p>
+              <div style="float: left;">
+                <input type="range" min="1" max="30" value="6" class="slider" id="myFrameRate">
+                <p>FrameRate: <span id="framerate">6</span></p>
+              </div>
+              <div>
+                <input type="range" min="1" max="250000" value="100000" class="slider" id="myBitRate">
+                <p>BitRate: <span id="bitrate">100000</span></p>
+              </div>
+            </div>
+            <div>
+              <input type="radio" name="screensize" value="A"/>Original
+              <input type="radio" name="screensize" value="B"/>1280x720
+              <input type="radio" name="screensize" value="C"/>1920x1080
             </div>
           </p>
                 
@@ -63,8 +74,9 @@
         </div>
         <br>
         <hr>
-        <button onClick="binaryWS.connect()">Connect Binary</button>
-        <button onClick="binaryWS.disconnect()">Disconnect Binary</button>
+        <p>This is just for uploading a binary file to websocket</p>
+        <button onClick="binaryWS.connect()">Connect WS</button>
+        <button onClick="binaryWS.disconnect()">Disconnect WS</button>
         <input id="upload" type="file" onchange="binaryWS.uploadFile(this.files)"/>
         <label for="upload">Select a file</label>
 
