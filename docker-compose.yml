@@ -1,0 +1,26 @@
+version: "3.3"
+
+services:
+        
+  spring_run:
+    build:
+      context: ./ws-backend
+      dockerfile: ./dockerfiles/spring_run/DockerFile
+    command: java -jar dgomes_app.jar
+    env_file:
+      - ./ws-backend/environment/dev.env
+    restart: on-failure
+    ports:
+      - 8080:8080
+    volumes:
+      - ./upload_folder:/upload_folder
+
+  nginx:
+    image: nginx:1.13.3
+    container_name: nginx
+    restart: on-failure
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+      #- ./nginx:/etc/nginx/sites_enabled
+    ports:
+      - 80:80
