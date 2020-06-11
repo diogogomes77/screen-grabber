@@ -18,10 +18,6 @@ public class WebsocketConfig extends AbstractWebSocketMessageBrokerConfigurer im
         registry.addHandler(new UploadWSHandler(storageService), "/binary")
                 .setAllowedOrigins("*");
                // .withSockJS();
-        /*
-        registry.addHandler(new TestSocketHandler(), "/test")
-                .setAllowedOrigins("*")
-                .withSockJS();*/
     }
 
     @Override

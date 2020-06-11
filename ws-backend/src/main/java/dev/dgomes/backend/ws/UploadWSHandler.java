@@ -7,6 +7,7 @@ import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.BinaryMessage;
+import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.BinaryWebSocketHandler;
 
@@ -16,74 +17,58 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+
 public class UploadWSHandler extends BinaryWebSocketHandler {
 
     private final StorageService storageService;
+    //
     int i=0;
-    String fileName = "cenas_";
+    String name = "cenas_";
+    String filename;
 
     @Autowired
     public UploadWSHandler(StorageService storageService) {
-
         this.storageService = storageService;
+        this.i = storageService.getNumberFilesInDir()-1;
+        this.filename = name + Integer.toString(i) + ".webm";
     }
-
-    //Map<WebSocketSession,> sessionToFileMap = new WeakHashMap<>();
-    //ServletFileUpload upload = new ServletFileUpload();
 
     List<WebSocketSession> sessions = new CopyOnWriteArrayList();
 
+    private void setFilename(){
+
+        while(storageService.fileExists(filename)){
+            i++;
+            filename = name + Integer.toString(i) + ".webm";
+        }
+    }
+
     @Override
     protected void handleBinaryMessage(WebSocketSession session, BinaryMessage message) throws Exception {
-        //System.out.println("BinaryMessage= ");
-        System.out.println(message);
         ByteBuffer payload = message.getPayload();
-        i++;
-        String name = fileName + Integer.toString(i);
-        storageService.storeByteBuffer(payload,fileName);
-        //System.out.println(name);
-//        FileChannel channel =  new FileOutputStream(new File("file.png"), false).getChannel();
-//        channel.write(payload);
-//        channel.close();
+        storageService.storeByteBuffer(payload,filename);
         String response = "Upload Chunk: size "+ payload.array().length;
-        System.out.println(response);
-
         if (message.isLast()) {
-            System.out.println("end of upload");
+            System.out.print(" .");
         }
-
-
     }
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         System.out.println("Binary afterConnectionEstablished");
         sessions.add(session);
+        this.setFilename();
+    }
+
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        System.out.println("Binary afterConnectionClosed");
+        sessions.remove(session);
     }
 
     @Override
     public boolean supportsPartialMessages() {
         return true;
     }
-
-    //    @Override
-//    protected void handleTextMessage(WebSocketSession session, TextMessage message)  {
-//        System.out.println("FILE RECEIVING "+message.getPayload());
-//        try {
-//            session.sendMessage(new TextMessage("FILE RECEIVING "+message.getPayload()));
-//        } catch(Exception e) {
-//            e.printStackTrace();
-//        }
-////        for(WebSocketSession webSocketSession : sessions) {
-////            try {
-////                webSocketSession.sendMessage(new TextMessage("Received " + message.getPayload()));
-////            } catch (Exception e) {
-////                e.printStackTrace();
-////            }
-////        }
-//    }
-
-
 
 }
 
