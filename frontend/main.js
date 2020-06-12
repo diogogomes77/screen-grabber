@@ -7,14 +7,30 @@ $(document).ready(function() {
   var host = '127.0.0.1'
   var port = ':8080'
   var sockBinaryUrl = protWs + host + port + '/binary';
+  var sockPicturesUrl = protWs + host + port + '/pictures';
 
   window.binaryWS = new BinaryWSClient(sockBinaryUrl);
-  window.binaryWS.setOnMessage(showGreetings);
+  //window.binaryWS.setOnMessage(showGreetings);
+
+  function startWS(captureType){
+    if (captureType == "video"){
+      window.binaryWS = new BinaryWSClient(sockBinaryUrl);
+    }else {
+      window.binaryWS = new BinaryWSClient(sockPicturesUrl);
+    }
+  }
+  function stopWS(){
+    window.binaryWS = null;
+  }
     
   const videoElem = document.getElementById("video");
   const logElem = document.getElementById("log");
   const startElem = document.getElementById("start");
   const stopElem = document.getElementById("stop");
+
+  const canvas = document.getElementById("canvas");
+  const output = document.getElementById("output");
+  const photo = document.getElementById("photo");
 
   var myFrameRateSlider = document.getElementById("myFrameRate");
   var myFrameRateElem = document.getElementById("framerate");
@@ -38,8 +54,10 @@ $(document).ready(function() {
     myFrameRateElem.innerHTML = this.value;
     displayMediaOptions['video']['frameRate'] = this.value;
   } 
+  var width = 1280;    
+  var height;     
 
-  $('input[type="radio"]').change( function(e) {
+  $('#screesizeradio input[type="radio"]').change( function(e) {
     switch($(this).val()) {
       case "A":
         height = null;
@@ -78,13 +96,29 @@ $(document).ready(function() {
     mediaRecorderOptions['videoBitsPerSecond'] = this.value;
   } 
 
-
+  var captureType = "video";
+  $('#capturetype input[type="radio"]').change( function(e) {
+    switch($(this).val()) {
+      case "A":
+        captureType = "video";
+        break;
+      case "B":
+        captureType = "picture";
+        break;
+      default:
+        captureType = "video";
+    }
+    console.log("captureType " + captureType);
+  });
   startElem.addEventListener("click", function(evt) {
     startCapture();
   }, false);
   
   stopElem.addEventListener("click", function(evt) {
+    pictureCaptureStarted = false;
+    
     stopCapture();
+    stopWS();    
   }, false); 
   
   console.log = msg => logElem.innerHTML += `${msg}<br>`;
@@ -96,31 +130,85 @@ $(document).ready(function() {
   //console.log(stream);
   
 
+
+  var streaming = false;
+  var pictureCaptureStarted = false;
+
   async function startCapture() {
     logElem.innerHTML = "";
-    if (window.binaryWS.ws) {
+    startWS(captureType);
+    if (!window.binaryWS.ws) {
       window.binaryWS.connect();
     }
     try {
       videoElem.srcObject = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
+      videoElem.addEventListener('canplay', function(ev){
+        if (!streaming) {
+          height = video.videoHeight / (video.videoWidth/width);
+          videoElem.setAttribute('width', width);
+          videoElem.setAttribute('height', height);
+          canvas.setAttribute('width', width);
+          canvas.setAttribute('height', height);
+          streaming = true;
+        }
+      }, false);
+     
+      if (captureType == "video"){
+        startMediaRecorder();
+        dumpOptionsInfo();
+      } else {
+        pictureCaptureStarted = true;
+        startPictureCapture();
+      }
       //videoElem.srcObject = await navigator.mediaDevices.getUserMedia(displayMediaOptions);
-      dumpOptionsInfo();
-      //videoElem.captureStream = videoElem.captureStream || videoElem.mozCaptureStream;
-      mediaRecorder = new MediaRecorder(videoElem.srcObject, mediaRecorderOptions);
-      console.info(mediaRecorder);
-      mediaRecorder.ondataavailable = handleDataAvailable;
-      mediaRecorder.onstop = handleStop;
-      mediaRecorder.start(1000);
-      /*
-      mediaRecorder.start();
-      setTimeout(event => {
-        console.log("stopping");
-        mediaRecorder.stop();
-      }, 3000);*/
+      
+      //videoElem.captureStream = videoElem.captureStream || videoElem.mozCaptureStream;      
     } catch(err) {
       console.error("Error: " + err);
     }
-  } 
+}
+function clearphoto() {
+  var context = canvas.getContext('2d');
+  context.fillStyle = "#AAA";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+
+  var data = canvas.toDataURL('image/png');
+  photo.setAttribute('src', data);
+}
+function startPictureCapture(){
+  if (pictureCaptureStarted == true){
+    console.log("PictureCapture: " + myFrameRate);
+    var context = canvas.getContext('2d');
+    if (width && height) {
+      canvas.width = width;
+      canvas.height = height;
+      context.drawImage(video, 0, 0, width, height);
+      var data = canvas.toDataURL('image/png');
+      photo.setAttribute('src', data);
+      canvas.toBlob(function(blob) {
+        upload(blob); 
+      });
+       
+    } else {
+      clearphoto();
+    }
+    setTimeout(startPictureCapture, 1000/myFrameRate);
+    }
+}
+
+function startMediaRecorder(){
+  mediaRecorder = new MediaRecorder(videoElem.srcObject, mediaRecorderOptions);
+  console.info(mediaRecorder);
+  mediaRecorder.ondataavailable = handleDataAvailable;
+  mediaRecorder.onstop = handleStop;
+  mediaRecorder.start(1000);
+  /*
+  mediaRecorder.start();
+  setTimeout(event => {
+    console.log("stopping");
+    mediaRecorder.stop();
+  }, 3000);*/
+}
 
 function handleStop(event){
   console.log("handleStop");
@@ -186,5 +274,5 @@ function download() {
     console.info("Track constraints:");
     console.info(JSON.stringify(videoTrack.getConstraints(), null, 2));
   }
-
+  console.log('ready');
 });

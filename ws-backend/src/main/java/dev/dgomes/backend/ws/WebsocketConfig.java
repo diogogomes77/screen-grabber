@@ -15,9 +15,11 @@ public class WebsocketConfig extends AbstractWebSocketMessageBrokerConfigurer im
     }
 
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(new UploadWSHandler(storageService), "/binary")
+        registry.addHandler(new UploadWSStreamHandler(storageService), "/binary")
                 .setAllowedOrigins("*");
                // .withSockJS();
+        registry.addHandler(new UploadWSPicturesHandler(storageService), "/pictures")
+                .setAllowedOrigins("*");
     }
 
     @Override

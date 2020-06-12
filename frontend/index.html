@@ -27,6 +27,17 @@
       .info {
         color: darkgreen;
       }
+
+      #canvas {
+        display:none;
+      }
+      #photo {
+        border: 1px solid black;
+        box-shadow: 2px 2px 3px black;
+        width:320px;
+        height:240px;
+      }
+
     </style>
   </head>
 
@@ -35,19 +46,26 @@
     <div class="navbar navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
-          <a class="brand" href="#">Screen grabber</a>
+          <a class="brand" href="#">SCREEN GRABBER by Diogo Gomes 2020</a>
         </div>
       </div>
     </div>
     <div class="container-fluid">
+      <p>
         <div class="row-fluid">
-            <p>This will capture your screen and send it to Websockets as Webm video sream. <br>
-                Click the Start Capture button to begin.</p>
-                
-          <p>
+          <strong>This will capture your screen and send it to Websockets as Webm video sream or individual pictures <br>
+            Click the Start Capture button to begin.
+        </strong>
+      </p>
+          <div>
             <button id="start">Start Capture</button>
               &nbsp;
             <button id="stop">Stop Capture</button>
+            <div id="capturetype" style="float: left;">
+              <input type="radio" name="capture" value="A"/>Video
+              <input type="radio" name="capture" value="B"/>Pictures
+            </div>
+          </div>
             <div class="slidecontainer">
               <div style="float: left;">
                 <input type="range" min="1" max="30" value="6" class="slider" id="myFrameRate">
@@ -58,14 +76,18 @@
                 <p>BitRate: <span id="bitrate">100000</span></p>
               </div>
             </div>
-            <div>
+            <div id="screesizeradio">
               <input type="radio" name="screensize" value="A"/>Original
               <input type="radio" name="screensize" value="B"/>1280x720
               <input type="radio" name="screensize" value="C"/>1920x1080
             </div>
-          </p>
+          
                 
                 <video id="video" autoplay></video>
+                <canvas id="canvas"></canvas>
+                <div class="output">
+                  <img id="photo" alt="The screen capture will appear in this box.">
+                </div>
                 <br>
                 
                 <strong>Log:</strong>
