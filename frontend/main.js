@@ -8,6 +8,7 @@ $(document).ready(function() {
   var port = ':8080'
   var sockBinaryUrl = protWs + host + port + '/binary';
   var sockPicturesUrl = protWs + host + port + '/pictures';
+  var sockMjpegUrl = protWs + host + port + '/mjpeg';
 
   window.binaryWS = new BinaryWSClient(sockBinaryUrl);
   //window.binaryWS.setOnMessage(showGreetings);
@@ -15,8 +16,12 @@ $(document).ready(function() {
   function startWS(captureType){
     if (captureType == "video"){
       window.binaryWS = new BinaryWSClient(sockBinaryUrl);
-    }else {
+    }
+    else if (captureType == "picture") {
       window.binaryWS = new BinaryWSClient(sockPicturesUrl);
+    }
+    else if (captureType == "mjpeg") {
+      window.binaryWS = new BinaryWSClient(sockMjpegUrl);
     }
   }
   function stopWS(){
@@ -53,9 +58,10 @@ $(document).ready(function() {
   myFrameRateSlider.oninput = function() {
     myFrameRateElem.innerHTML = this.value;
     displayMediaOptions['video']['frameRate'] = this.value;
+    myFrameRate = this.value;
   } 
   var width = 1280;    
-  var height;     
+  var height = 720;     
 
   $('#screesizeradio input[type="radio"]').change( function(e) {
     switch($(this).val()) {
@@ -84,6 +90,7 @@ $(document).ready(function() {
 
   var myBitRateSlider = document.getElementById("myBitRate");
   var myBitRateElem = document.getElementById("bitrate");
+  
   var myBitRate = 100000;
 
   var mediaRecorderOptions = { 
@@ -96,14 +103,42 @@ $(document).ready(function() {
     mediaRecorderOptions['videoBitsPerSecond'] = this.value;
   } 
 
+  var myPicQualitySlider = document.getElementById("myQuality");
+  var myPicQuality = document.getElementById("quality");
+
+  var picQuality = 0.9;
+
+  myPicQualitySlider.oninput = function() {
+    myPicQuality.innerHTML = this.value;
+    picQuality = this.value/100;
+  } 
+
   var captureType = "video";
+
   $('#capturetype input[type="radio"]').change( function(e) {
     switch($(this).val()) {
       case "A":
         captureType = "video";
+        $("#myBitRateDiv").fadeIn();
+        $('#screenA').fadeIn();
+        $("#myQualityDiv").fadeOut();
         break;
       case "B":
         captureType = "picture";
+        $("#myBitRateDiv").fadeOut();
+        $('#screenA').fadeOut();
+        if ($('#screesizeradio input[type="radio"]').val() == 'A'){
+          $('#screesizeradio input[type="radio"]').val(['B']);
+        }
+        $("#myQualityDiv").fadeIn();
+        break;
+      case "B":
+        captureType = "mjpeg";
+        $('#screenA]').fadeOut();
+        if ($('#screesizeradio input[type="radio"]').val() == 'A'){
+          $('#screesizeradio input[type="radio"]').val(['B']);
+        }
+        $("#myQualityDiv").fadeIn();
         break;
       default:
         captureType = "video";
@@ -128,7 +163,6 @@ $(document).ready(function() {
 
   var recordedChunks = [];
   //console.log(stream);
-  
 
 
   var streaming = false;
@@ -144,9 +178,9 @@ $(document).ready(function() {
       videoElem.srcObject = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
       videoElem.addEventListener('canplay', function(ev){
         if (!streaming) {
-          height = video.videoHeight / (video.videoWidth/width);
-          videoElem.setAttribute('width', width);
-          videoElem.setAttribute('height', height);
+          //height = video.videoHeight / (video.videoWidth/width);
+          //videoElem.setAttribute('width', width);
+          //videoElem.setAttribute('height', height);
           canvas.setAttribute('width', width);
           canvas.setAttribute('height', height);
           streaming = true;
@@ -156,9 +190,14 @@ $(document).ready(function() {
       if (captureType == "video"){
         startMediaRecorder();
         dumpOptionsInfo();
-      } else {
+      } 
+      else if (captureType == "picture"){
         pictureCaptureStarted = true;
         startPictureCapture();
+      }
+      else if (captureType == "mjpeg"){
+        pictureCaptureStarted = true;
+        startMjpegCapture();
       }
       //videoElem.srcObject = await navigator.mediaDevices.getUserMedia(displayMediaOptions);
       
@@ -167,27 +206,29 @@ $(document).ready(function() {
       console.error("Error: " + err);
     }
 }
+
 function clearphoto() {
   var context = canvas.getContext('2d');
   context.fillStyle = "#AAA";
   context.fillRect(0, 0, canvas.width, canvas.height);
 
-  var data = canvas.toDataURL('image/png');
+  var data = canvas.toDataURL('image/jpeg', picQuality);
   photo.setAttribute('src', data);
 }
+
 function startPictureCapture(){
   if (pictureCaptureStarted == true){
     console.log("PictureCapture: " + myFrameRate);
     var context = canvas.getContext('2d');
     if (width && height) {
-      canvas.width = width;
-      canvas.height = height;
+      //canvas.width = width;
+      //canvas.height = height;
       context.drawImage(video, 0, 0, width, height);
-      var data = canvas.toDataURL('image/png');
+      var data = canvas.toDataURL('image/jpeg', picQuality);
       photo.setAttribute('src', data);
       canvas.toBlob(function(blob) {
         upload(blob); 
-      });
+      },'image/jpeg', picQuality);
        
     } else {
       clearphoto();

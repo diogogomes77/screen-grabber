@@ -62,27 +62,36 @@
               &nbsp;
             <button id="stop">Stop Capture</button>
             <div id="capturetype" style="float: left;">
-              <input type="radio" name="capture" value="A"/>Video
+              <input type="radio" name="capture" value="A" checked="checked" />Video
               <input type="radio" name="capture" value="B"/>Pictures
+              <input type="radio" name="capture" value="B"/>MJPEG
             </div>
+          </div>
+          <div id="screesizeradio">
+            <span id="screenA">
+              <input type="radio" name="screensize" value="A"/>Original
+            </span>
+            <input type="radio" name="screensize" value="B" checked="checked"/>1280x720
+            <input type="radio" name="screensize" value="C"/>1920x1080
           </div>
             <div class="slidecontainer">
               <div style="float: left;">
                 <input type="range" min="1" max="30" value="6" class="slider" id="myFrameRate">
                 <p>FrameRate: <span id="framerate">6</span></p>
               </div>
-              <div>
-                <input type="range" min="1" max="250000" value="100000" class="slider" id="myBitRate">
-                <p>BitRate: <span id="bitrate">100000</span></p>
+              
+              <div class="emptyslider">
+                <div id="myBitRateDiv">
+                  <input type="range" min="1" max="250000" value="100000" class="slider" id="myBitRate">
+                  <p>BitRate: <span id="bitrate">100000</span></p>
+                </div>
+                <div id="myQualityDiv" style="display: none;">
+                  <input type="range" min="1" max="100" value="90" class="slider" id="myQuality">
+                  <p>Pic quality: <span id="quality">90</span></p>
+                </div>
               </div>
             </div>
-            <div id="screesizeradio">
-              <input type="radio" name="screensize" value="A"/>Original
-              <input type="radio" name="screensize" value="B"/>1280x720
-              <input type="radio" name="screensize" value="C"/>1920x1080
-            </div>
-          
-                
+            
                 <video id="video" autoplay></video>
                 <canvas id="canvas"></canvas>
                 <div class="output">

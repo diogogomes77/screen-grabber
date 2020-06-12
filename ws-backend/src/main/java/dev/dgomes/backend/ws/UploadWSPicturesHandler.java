@@ -24,7 +24,7 @@ public class UploadWSPicturesHandler extends BinaryWebSocketHandler {
     public UploadWSPicturesHandler(StorageService storageService) {
         this.storageService = storageService;
         this.i = storageService.getNumberFilesInDir()-1;
-        this.filename = name + Integer.toString(i) + ".png";
+        this.filename = name + Integer.toString(i) + ".jpg";
     }
 
     List<WebSocketSession> sessions = new CopyOnWriteArrayList();
@@ -33,7 +33,7 @@ public class UploadWSPicturesHandler extends BinaryWebSocketHandler {
 
         while(storageService.fileExists(filename)){
             i++;
-            filename = name + Integer.toString(i) + ".png";
+            filename = name + Integer.toString(i) + ".jpg";
         }
     }
 
@@ -41,10 +41,10 @@ public class UploadWSPicturesHandler extends BinaryWebSocketHandler {
     protected void handleBinaryMessage(WebSocketSession session, BinaryMessage message) throws Exception {
         ByteBuffer payload = message.getPayload();
         storageService.storeByteBuffer(payload,filename);
-        String response = "Upload Chunk: size "+ payload.array().length;
+        String response = " Chunk: "+ payload.array().length;
         System.out.print(response);
         if (message.isLast()) {
-            System.out.println("picture created: " + filename);
+            System.out.println("\npicture created: " + filename);
             this.setFilename();
         }
     }
