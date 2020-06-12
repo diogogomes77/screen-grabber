@@ -23,6 +23,7 @@ $(document).ready(function() {
     else if (captureType == "mjpeg") {
       window.binaryWS = new BinaryWSClient(sockMjpegUrl);
     }
+    console.log("ws= " + captureType )
   }
   function stopWS(){
     window.binaryWS = null;
@@ -132,9 +133,9 @@ $(document).ready(function() {
         }
         $("#myQualityDiv").fadeIn();
         break;
-      case "B":
+      case "C":
         captureType = "mjpeg";
-        $('#screenA]').fadeOut();
+        $('#screenA').fadeOut();
         if ($('#screesizeradio input[type="radio"]').val() == 'A'){
           $('#screesizeradio input[type="radio"]').val(['B']);
         }
@@ -197,7 +198,7 @@ $(document).ready(function() {
       }
       else if (captureType == "mjpeg"){
         pictureCaptureStarted = true;
-        startMjpegCapture();
+        startPictureCapture();
       }
       //videoElem.srcObject = await navigator.mediaDevices.getUserMedia(displayMediaOptions);
       

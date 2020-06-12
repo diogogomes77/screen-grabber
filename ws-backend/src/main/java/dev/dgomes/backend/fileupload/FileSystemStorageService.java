@@ -1,5 +1,7 @@
 package dev.dgomes.backend.fileupload;
 
+import io.humble.video.Muxer;
+import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -57,6 +59,9 @@ public class FileSystemStorageService implements StorageService {
 		return new File(this.rootLocation.toString(), filename).exists();
 	}
 
-
+	@Override
+	public Muxer getMuxer(String filename){
+		return Muxer.make(this.rootLocation.resolve(filename).toString(), null, "mp4");
+	}
 
 }

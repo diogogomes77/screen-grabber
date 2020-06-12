@@ -1,5 +1,6 @@
 package dev.dgomes.backend.fileupload;
 
+import io.humble.video.Muxer;
 import org.springframework.core.io.Resource;
 
 import java.io.InputStream;
@@ -13,7 +14,8 @@ public interface StorageService {
     int getNumberFilesInDir();
     boolean fileExists(String filename);
 
-
+    //void inMemoryStoreByteBuffer(ByteBuffer payload, String name);
+    public Muxer getMuxer(String filename);
 
 
 }
