@@ -1,7 +1,6 @@
 package dev.dgomes.backend.ws;
 
 import dev.dgomes.backend.fileupload.StorageService;
-import dev.dgomes.backend.mjpeg.HumbleExporter;
 import dev.dgomes.backend.mjpeg.VideoRecorder;
 import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,21 +22,23 @@ public class UploadWSMjpegHandler extends BinaryWebSocketHandler {
 
     private final StorageService storageService;
     //private VideoRecorder recorder;
-    private HumbleExporter recorder;
+    private VideoRecorder recorder;
     //
     int i=0;
     String name = "video_";
     String filename;
     SeekableInMemoryByteChannel byteChannel;
-    int ii=0;
-    private boolean firstImamge = true;
+
+    //int ii=0;
+    //private boolean firstImamge = true;
+    private boolean running = false;
 
     @Autowired
     public UploadWSMjpegHandler(StorageService storageService) {
         this.storageService = storageService;
         this.i = storageService.getNumberFilesInDir()-1;
         this.filename = name + Integer.toString(i) + ".mp4";
-        recorder = new HumbleExporter(filename,storageService,6);// TODO get frame rate
+        recorder = new VideoRecorder(storageService);
     }
 
     List<WebSocketSession> sessions = new CopyOnWriteArrayList();
@@ -64,20 +65,20 @@ public class UploadWSMjpegHandler extends BinaryWebSocketHandler {
         ByteBuffer payload = message.getPayload();
         //storageService.storeByteBuffer(payload,filename);
         byteChannel.write(payload);
-        String response = " Chunk: "+ payload.array().length;
+        //String response = " Chunk: "+ payload.array().length;
         //System.out.print(".");
-        System.out.print(response);
+        //System.out.print(response);
         if (message.isLast()) {
-            System.out.println(" last total size= " + byteChannel.size());
+            //System.out.println(" last total size= " + byteChannel.size());
 
             BufferedImage screen = createImageFromBytes(byteChannel.array());
-            String imageFilename = "image_" + Integer.toString(ii) + ".jpg";
+            //String imageFilename = "image_" + Integer.toString(ii) + ".jpg";
             //storageService.saveImage(screen, imageFilename);
-            ii++;
+            //ii++;
             //recorder.addPicture(screen);
-            if (firstImamge){
-                recorder.open(screen.getWidth(), screen.getHeight());
-                firstImamge =false;
+            if (!running){
+                recorder.open(screen.getWidth(), screen.getHeight(), filename, 6);// TODO get frame rate
+                running = true;
             }
             recorder.encode(screen);
             byteChannel = new SeekableInMemoryByteChannel();
@@ -98,7 +99,10 @@ public class UploadWSMjpegHandler extends BinaryWebSocketHandler {
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         System.out.println("Mjpeg afterConnectionClosed");
         sessions.remove(session);
-        recorder.close();
+        if (running){
+            recorder.close();
+            running = false;
+        }
     }
 
     @Override
