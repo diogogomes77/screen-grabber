@@ -22,6 +22,7 @@ public class WebsocketConfig extends AbstractWebSocketMessageBrokerConfigurer im
                 .setAllowedOrigins("*");
         registry.addHandler(new UploadWSMjpegHandler(storageService), "/mjpeg")
                 .setAllowedOrigins("*");
+
     }
 
     @Override

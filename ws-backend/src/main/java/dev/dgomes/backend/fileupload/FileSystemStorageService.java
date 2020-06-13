@@ -26,17 +26,18 @@ import java.util.stream.Stream;
 public class FileSystemStorageService implements StorageService {
 
 	private final Path rootLocation;
+	private final HashSet options;
 
 	@Autowired
 	public FileSystemStorageService(StorageProperties properties) {
 		this.rootLocation = Paths.get(properties.getLocation());
+		options = new HashSet();
+		options.add(StandardOpenOption.CREATE);
+		options.add(StandardOpenOption.APPEND);
 	}
 
 	@Override
 	public void storeByteBuffer(ByteBuffer payload, String filename ) {
-		Set options = new HashSet();
-		options.add(StandardOpenOption.CREATE);
-		options.add(StandardOpenOption.APPEND);
 		try {
 			SeekableByteChannel byteChannel = Files.newByteChannel(
 					this.rootLocation.resolve(filename),
@@ -63,7 +64,8 @@ public class FileSystemStorageService implements StorageService {
 
 	@Override
 	public Muxer getMuxer(String filename){
-		return Muxer.make(this.rootLocation.resolve(filename).toString(), null, "mp4");
+		Muxer muxer = Muxer.make(this.rootLocation.resolve(filename).toString(), null, "mp4");
+		return muxer;
 	}
 
 	@Override
