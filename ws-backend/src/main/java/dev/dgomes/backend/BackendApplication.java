@@ -8,6 +8,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 
+import java.io.IOException;
+
 @SpringBootApplication
 @EnableConfigurationProperties({
 		StorageProperties.class
@@ -19,5 +21,5 @@ public class BackendApplication {
 		SpringApplication.run(BackendApplication.class, args);
 		System.out.println("SCREEN GRABBER by Diogo Gomes 2020");
 	}
-
+	
 }
