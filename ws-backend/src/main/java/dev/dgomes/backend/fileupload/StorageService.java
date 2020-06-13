@@ -3,6 +3,7 @@ package dev.dgomes.backend.fileupload;
 import io.humble.video.Muxer;
 import org.springframework.core.io.Resource;
 
+import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
@@ -18,4 +19,5 @@ public interface StorageService {
     public Muxer getMuxer(String filename);
 
 
+    void saveImage(BufferedImage screen, String filename);
 }

@@ -7,6 +7,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -62,6 +64,17 @@ public class FileSystemStorageService implements StorageService {
 	@Override
 	public Muxer getMuxer(String filename){
 		return Muxer.make(this.rootLocation.resolve(filename).toString(), null, "mp4");
+	}
+
+	@Override
+	public void saveImage(BufferedImage screen, String filename) {
+		File outputfile = new File(this.rootLocation.resolve(filename).toString());
+		try {
+			ImageIO.write(screen, "jpg", outputfile);
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		}
 	}
 
 }

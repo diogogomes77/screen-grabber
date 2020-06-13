@@ -7,6 +7,21 @@ BinaryWSClient.prototype.connect = function() {
     //var ws = new SockJS(this.url);
     this.ws = ws;
     ws.onmessage = this.onMessageFn;
+    this.ws.onerror = function(e){
+        //setTimeout(setupWebSocket, 1000);
+        console.log("ws onerror: " + e);
+    };
+
+    this.ws.onopen = function(e){
+        //setTimeout(setupWebSocket, 1000);
+        console.log("ws onopen: " + e);
+    };
+
+    
+    this.ws.onclose = function(e){
+        //setTimeout(setupWebSocket, 1000);
+        console.log("ws onclose: " + e);
+    };
 
     this.setConnected(true);
 };

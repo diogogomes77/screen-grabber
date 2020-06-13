@@ -29,6 +29,7 @@ public class VideoRecorder {
     private MediaPictureConverter converter;
     private int i;
     private MediaPacket packet;
+    private boolean running = false;
 
     public VideoRecorder(String filename, StorageService storageService,int snapsPerSecond) {
         this.filename = filename;
@@ -38,25 +39,35 @@ public class VideoRecorder {
         this.muxer = storageService.getMuxer(filename);
 
         format = muxer.getFormat();
+        System.out.println("format= " + format);
 
         if (codecname != null) {
             codec = Codec.findEncodingCodecByName(codecname);
         } else {
             codec = Codec.findEncodingCodec(format.getDefaultVideoCodecId());
         }
-        encoder = Encoder.make(codec);
-        encoder.setWidth(1280);
-        encoder.setHeight(720); // TODO get this from pictures size
-        PixelFormat.Type pixelformat = PixelFormat.Type.PIX_FMT_YUV420P;
+        System.out.println("codec= " + codec);
+
         framerate = Rational.make(1, snapsPerSecond);
+        System.out.println("framerate= " + framerate);
+    }
+
+
+    private void initialize(int height, int width){
+        encoder = Encoder.make(codec);
+        encoder.setWidth(width);
+        encoder.setHeight(height);
+        PixelFormat.Type pixelformat = PixelFormat.Type.PIX_FMT_YUV420P;
         encoder.setPixelFormat(pixelformat);
         encoder.setTimeBase(framerate);
 
         if (format.getFlag(MuxerFormat.Flag.GLOBAL_HEADER))
             encoder.setFlag(Encoder.Flag.FLAG_GLOBAL_HEADER, true);
         encoder.open(null, null);
-        muxer.addNewStream(encoder);
+
+
         try {
+            muxer.addNewStream(encoder);
             muxer.open(null, null);
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -71,24 +82,28 @@ public class VideoRecorder {
         picture.setTimeBase(framerate);
         packet = MediaPacket.make();
     }
-    private BufferedImage createImageFromBytes(byte[] imageData) {
-        ByteArrayInputStream bais = new ByteArrayInputStream(imageData);
-        try {
-            return ImageIO.read(bais);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    public void addPicture(SeekableInMemoryByteChannel byteChannel) {
-        BufferedImage screen = createImageFromBytes(byteChannel.array());
 
+    public void addPicture(BufferedImage image) {
+        //BufferedImage screen = createImageFromBytes(byteChannel.array());
+        BufferedImage screen = convertToType(image, BufferedImage.TYPE_3BYTE_BGR);
+        if (!running){
+            running = true;
+            initialize(screen.getHeight(), screen.getWidth());
+        }
         if (converter == null)
+            System.out.println("converter null");
             converter = MediaPictureConverterFactory.createConverter(screen, picture);
-        converter.toPicture(picture, screen, i++);
+        converter.toPicture(picture, screen, i);
+        i++;
         do {
             encoder.encode(packet, picture);
             if (packet.isComplete())
+                System.out.println("packet complete");
+            try {
                 muxer.write(packet, false);
+            }catch (Exception e){
+               // finishVideo(); // TODO dirty fix
+            }
         } while (packet.isComplete());
 
         //ByteBuffer byteBuffer = ByteBuffer.wrap(byteChannel.array());
@@ -96,6 +111,9 @@ public class VideoRecorder {
     }
 
     public void finishVideo(){
+        running = false;
+        i = 0;
+        System.out.println("finishVideo");
         do {
             encoder.encode(packet, null);
             if (packet.isComplete())

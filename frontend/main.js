@@ -26,6 +26,8 @@ $(document).ready(function() {
     console.log("ws= " + captureType )
   }
   function stopWS(){
+    console.info("stopWS");
+    window.binaryWS.disconnect();
     window.binaryWS = null;
   }
     
@@ -152,9 +154,8 @@ $(document).ready(function() {
   
   stopElem.addEventListener("click", function(evt) {
     pictureCaptureStarted = false;
-    
     stopCapture();
-    stopWS();    
+       
   }, false); 
   
   console.log = msg => logElem.innerHTML += `${msg}<br>`;
@@ -216,10 +217,11 @@ function clearphoto() {
   var data = canvas.toDataURL('image/jpeg', picQuality);
   photo.setAttribute('src', data);
 }
+var first = true;
 
 function startPictureCapture(){
   if (pictureCaptureStarted == true){
-    console.log("PictureCapture: " + myFrameRate);
+    //console.log("PictureCapture: " + myFrameRate);
     var context = canvas.getContext('2d');
     if (width && height) {
       //canvas.width = width;
@@ -227,9 +229,13 @@ function startPictureCapture(){
       context.drawImage(video, 0, 0, width, height);
       var data = canvas.toDataURL('image/jpeg', picQuality);
       photo.setAttribute('src', data);
-      canvas.toBlob(function(blob) {
-        upload(blob); 
-      },'image/jpeg', picQuality);
+      if (!first){
+        canvas.toBlob(function(blob) {
+          upload(blob); 
+        },'image/jpeg', picQuality);
+      }
+      first = false;
+
        
     } else {
       clearphoto();
@@ -303,9 +309,11 @@ function download() {
 }
   
   function stopCapture(evt) {
+    console.info("stopCapture");
     let tracks = videoElem.srcObject.getTracks();
     tracks.forEach(track => track.stop());
     videoElem.srcObject = null;
+    stopWS(); 
   } 
   
   function dumpOptionsInfo() {
