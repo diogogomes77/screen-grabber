@@ -1,20 +1,20 @@
 # screen-grabber
 
-This app will grab your screen from the browser and sends it back in realtime throught websockets to the springboot server where the feature result is then saved in upload_folder.
-For this to work, the user needs to give permission to share the screen (app's window or full desktop).
+This application will grab your computer screen from the browser and sends it back to the spring boot server. The process happens in real time through websockets and the result is then saved in server upload_folder.
+Note: For the screen to be grabbed, the user will be asked to give sharing permission of some app window or the full desktop screen.
 
 ## Features
 
 ### Video capture 
-This option will send a Webm video format stream, that will be saved on the server folder.
-Frame rate and bit rate options will set the video quality and bandwidth used. 
+This option will send the screen grab in a Webm video format stream, that will be saved on the server folder.
+The video quality will be set from Frame rate, Bit rate options and screen size.  This options will also determine the bandwidth used. 
 
 Limitations:
-- The frame rate must be 6 at least.
+- The frame rate must be greater than 5 (6 at least).
 
 
 ### Picture capture
-This option will send screen shots in JPEG format at given frame rate and quality. The images will be saved individually in upload_folder.
+This option will send screenshots in JPEG format at given frame rate and quality. The images will be saved individually in upload_folder.
 
 Limitations:
 - The screen size must be one of the numeric options. Unlike video capture, no original screen size can be used.
@@ -24,10 +24,12 @@ Limitations:
 This option will send screen shots exactly like the Picture capture, but no images will be saved individually. Instead, a video file will be encoded on the server side and then saved in the upload_folder.
 
 Limitations: 
-- Important! this feature is not prepared to run in JAR without a tweak because "it's not possible to load a native library from inside a jar"  (https://github.com/artclarke/humble-video/issues/112#issuecomment-607157685)
+- Important! This feature only works when run from the IDE. It is not prepared to run from Docker yet. Due to a JNI in the library used for this feature, the code has to be modified to include the native library in the JAR it self.  (https://github.com/artclarke/humble-video/issues/112#issuecomment-607157685)
 - The framerate is hardcoded at 6 fps.
 - Screen size must be one of the numerical options. - No option for original screen size.
 - The user must stop the capture, for the server to flush the muxer and close the file (it takes some seconds for the file to be ready).
+
+
 
 
 ## to run:
@@ -41,8 +43,8 @@ http://127.0.0.1
 
 Tested on: Firefox and Chrome
 
-To do in the future: 
-- Tweek the size of websocket messages to better suit the MediaRecorder chunks.
+### Future work:
+Optimize the size of websocket messages to better suit the MediaRecorder chunks.
 - Picture and MJPEG capture using original screen size.
-- Choose the framerate to use in MJPEG capture and maybe the Codec also. Maybe usin a first message with this information for configuring the muxer in the server and then digest the following messages for encoding the video.
-- Implement https://github.com/adamheinrich/native-utils 
+- Choose the framerate to use in MJPEG capture and maybe the Codec also. Maybe using the first message for the muxer configuration in the server and then digest the following messages for encoding the video.
+- Implement https://github.com/adamheinrich/native-utils for solving the JNI issue.
