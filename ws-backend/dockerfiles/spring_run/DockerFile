@@ -1,4 +1,4 @@
-FROM maven:3.5.2-jdk-8-alpine
+FROM goyalzz/ubuntu-java-8-maven-docker-image
 MAINTAINER Diogo Gomes
 COPY ./pom.xml /build/
 COPY ./src /build/src/

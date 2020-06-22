@@ -24,7 +24,6 @@ Limitations:
 This option will send screen shots exactly like the Picture capture, but no images will be saved individually. Instead, a video file will be encoded on the server side and then saved in the upload_folder.
 
 Limitations: 
-- Important! This feature only works when run from the IDE. It is not prepared to run from Docker yet. Due to a JNI in the library used for this feature, the code has to be modified to include the native library in the JAR it self.  (https://github.com/artclarke/humble-video/issues/112#issuecomment-607157685)
 - The framerate is hardcoded at 6 fps.
 - Screen size must be one of the numerical options. - No option for original screen size.
 - The user must stop the capture, for the server to flush the muxer and close the file (it takes some seconds for the file to be ready).
@@ -43,8 +42,11 @@ http://127.0.0.1
 
 Tested on: Firefox and Chrome
 
+### Changelog:
+- 22/06/20 MJPEG Capture is now working in docker
+
 ### Future work:
 Optimize the size of websocket messages to better suit the MediaRecorder chunks.
 - Picture and MJPEG capture using original screen size.
 - Choose the framerate to use in MJPEG capture and maybe the Codec also. Maybe using the first message for the muxer configuration in the server and then digest the following messages for encoding the video.
-- Implement https://github.com/adamheinrich/native-utils for solving the JNI issue.
+- Upgrade Ubuntu version in Maven's docker container
